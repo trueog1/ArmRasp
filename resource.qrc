@@ -1,11 +1,11 @@
 <RCC>
   <qresource prefix="/">
-    <file>stop.png</file>
-    <file>play.png</file>
-    <file>xArmUi.png</file>
-    <file>green.png</file>
-    <file>index.png</file>
-    <file>red.png</file>
-    <file>tubiao.png</file>
+    <file>images/stop.png</file>
+    <file>images/play.png</file>
+    <file>images/xArmUi.png</file>
+    <file>images/green.png</file>
+    <file>images/index.png</file>
+    <file>images/red.png</file>
+    <file>images/xArm.png</file>
   </qresource>
 </RCC>

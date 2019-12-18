@@ -1,32 +1,34 @@
+import sys
+import sqlite3
+import threading
+import resource_rc
 from socket import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from xArmUi import Ui_Form
+from SerialServoCmd import *
+from PyQt5.QtWidgets import *
+from SerialServoConfig import *
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-import sqlite3
-import sys
-import resource
 
 class MainWindow(QtWidgets.QWidget, Ui_Form):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
-        # self.setWindowIcon(QIcon(':/tubiao.png'))
+        self.setWindowIcon(QIcon(':/images/xArm.png'))
         self.tabWidget.setCurrentIndex(0)  # 设置默认标签为第一个标签
         self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 设置选中整行，若不设置默认选中单元格
-        
         self.client = socket(AF_INET, SOCK_STREAM)
-        # try:
-        #     self.client.connect(('127.0.0.1', 1075))
-        # except:
-        #     self.message_From("无法连接到服务器")
-        #     sys.exit()
-        # th = threading.Thread(target=self.tcpsocket_receive)
-        # th.setDaemon(True)
-        # th.start()
-        # self.button_controlaction_clicked('reflash')
+        try:
+            self.client.connect(('127.0.0.1', 1075))
+        except:
+            self.message_From("无法连接到服务器")
+            sys.exit()
+        th = threading.Thread(target=self.tcpsocket_receive)
+        th.setDaemon(True)
+        th.start()
+        self.button_controlaction_clicked('reflash')
 
         ########################主界面###############################
         self.validator1 = QIntValidator(0, 1000)
@@ -63,6 +65,7 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
         self.Button_AngularReadback.pressed.connect(lambda: self.button_editaction_clicked('angularReadback'))
         self.Button_AddAction.pressed.connect(lambda: self.button_editaction_clicked('addAction'))
         self.Button_DelectAction.pressed.connect(lambda: self.button_editaction_clicked('delectAction'))
+        self.Button_DelectAllAction.pressed.connect(lambda: self.button_editaction_clicked('delectAllAction'))                                                 
         self.Button_UpdateAction.pressed.connect(lambda: self.button_editaction_clicked('updateAction'))
         self.Button_InsertAction.pressed.connect(lambda: self.button_editaction_clicked('insertAction'))
         self.Button_MoveUpAction.pressed.connect(lambda: self.button_editaction_clicked('moveUpAction'))
@@ -89,8 +92,11 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
 
         self.devNew = [0, 0, 0, 0, 0, 0]
         self.devOld = [0, 0, 0, 0, 0, 0]
+        self.totalTime = 0
         #################################副界面#######################################
-        self.temp = 0
+        self.id = 0
+        self.dev = 0
+        self.servoTemp = 0
         self.servoMin = 0
         self.servoMax = 0
         self.servoMinV = 0
@@ -106,10 +112,15 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
         self.pushButton_read.pressed.connect(lambda: self.button_clicked('read'))
         self.pushButton_set.pressed.connect(lambda: self.button_clicked('set'))
         self.pushButton_default.pressed.connect(lambda: self.button_clicked('default'))
-
+        self.pushButton_quit2.pressed.connect(lambda: self.button_clicked('quit2'))
+        self.pushButton_resetPos.pressed.connect(lambda: self.button_clicked('resetPos'))
+        
         self.validator2 = QIntValidator(-125, 125)
         self.lineEdit_servoDev.setValidator(self.validator2)
-
+        
+        self.tabWidget.currentChanged['int'].connect(self.tabchange)
+        self.readOrNot = False
+        
     # 弹窗提示函数
     def message_From(self, str):
         messageBox = QMessageBox()
@@ -127,8 +138,12 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
         messageBox.addButton(QPushButton('取消'), QMessageBox.NoRole)
         return messageBox.exec_()
 
+    def tabchange(self):
+        if self.tabWidget.currentIndex() == 1:
+            self.message_From('注意，使用此面板功能时，请确保控制器只连接了一个舵机，否则会引起冲突！')           
+              
     def tcpsocket_receive(self):
-        while True:                        
+        while True:
             recv_data = self.client.recv(1024).decode()
             recv = recv_data.split('\r\n')          
             cmd = recv[0][:4]
@@ -151,6 +166,8 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
                     self.message_From('下载偏差成功!')
                 elif recv[3] == 'no':
                     self.message_From('偏差数量错误，下载失败!')
+                elif recv[3] == 'timeout':
+                    self.message_From('超时，下载失败!')
                 else:
                     self.message_From('偏差值超出范围-125~125，下载失败!')
                 print(recv)
@@ -176,11 +193,15 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
                     self.message_From('成功!')
                 elif recv[3] == 'no':
                     self.message_From('失败!')
+                elif recv[3] == 'timeout':
+                    self.message_From('超时!')                    
                 else:
                     self.message_From('指令错误!')
-                print(recv)
             if cmd == 'I011':
                 recv = recv[0].split('-')
+                if recv[1] == 'timeout':
+                    self.message_From('超时!')
+                    return
                 if int(recv[1]) == len(recv) - 2:
                     for i in range(2, len(recv)):
                         if recv[i] > 1000:
@@ -191,10 +212,12 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
                     RowCont = self.tableWidget.rowCount()
                     self.tableWidget.insertRow(RowCont)    # 增加一行
                     self.tableWidget.selectRow(RowCont)    # 定位最后一行为选中行                       
-                    self.add_line(RowCont, str(self.lineEdit_time.text()), angle[0], angle[1], angle[2], angle[3], angle[4], angle[5])                            
+                    self.add_line(RowCont, str(self.lineEdit_time.text()), angle[0], angle[1], angle[2], angle[3], angle[4], angle[5])
+                    self.totalTime += int(self.lineEdit_time.text())
+                    self.label_TotalTime.setText(str((self.totalTime)/1000.0))               
                 else:
-                    self.message_From('指令长度错误!')
-                            
+                    self.message_From('指令长度错误!')                      
+ 
     # 滑竿同步对应文本框的数值,及滑竿控制相应舵机转动
     def valuechange1(self, name):
         cmd = None
@@ -346,7 +369,6 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
         list = self.tabindex(self.tabWidget.currentIndex())
         RowCont = self.tableWidget.rowCount()
         item = self.tableWidget.currentRow()
-        
         if name == 'servoPowerDown':
             cmd = 'I010\r\n'
             self.client.send(cmd.encode())
@@ -357,16 +379,33 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
             self.tableWidget.insertRow(RowCont)    # 增加一行
             self.tableWidget.selectRow(RowCont)    # 定位最后一行为选中行
             self.add_line(RowCont, str(self.lineEdit_time.text()), list[0], list[1], list[2], list[3], list[4], list[5])
+            self.totalTime += int(self.lineEdit_time.text())
+            self.label_TotalTime.setText(str((self.totalTime)/1000.0))
         if name == 'delectAction':    # 删除动作
             self.tableWidget.removeRow(item)  # 删除选定行
+            self.totalTime -= int(self.lineEdit_time.text())
+            self.label_TotalTime.setText(str((self.totalTime)/1000.0))
+        if name == 'delectAllAction':
+            result = self.message_delect('此操作会删除列表中到所有动作，是否继续？')
+            if result == 0:                              
+                for i in range(RowCont):
+                    self.tableWidget.removeRow(0)
+                self.label_TotalTime.setText('0')
+            else:
+                pass            
         if name == 'updateAction':    # 更新动作
             self.add_line(item, str(self.lineEdit_time.text()), list[0], list[1], list[2], list[3], list[4], list[5])
+            self.totalTime = 0
+            for i in range(RowCont):
+                self.totalTime += int(self.tableWidget.item(i,2).text())
+            self.label_TotalTime.setText(str((self.totalTime)/1000.0))            
         if name == 'insertAction':    # 插入动作
             self.tableWidget.insertRow(item)       # 插入一行
             self.tableWidget.selectRow(item)
             self.add_line(item, str(self.lineEdit_time.text()), list[0], list[1], list[2], list[3], list[4], list[5])
+            self.totalTime += int(self.lineEdit_time.text())
+            self.label_TotalTime.setText(str((self.totalTime)/1000.0))
         if name == 'moveUpAction':
-            print(item, RowCont)
             if item == 0:
                 return
             current_data = self.getIndexData(item)
@@ -375,15 +414,16 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
             self.add_line(item, uplist_data[0], uplist_data[1], uplist_data[2], uplist_data[3], uplist_data[4], uplist_data[5], uplist_data[6])
             self.tableWidget.selectRow(item - 1) 
         if name == 'moveDownAction':
-            print(item, RowCont)
             if item == RowCont - 1:
                 return
             current_data = self.getIndexData(item)
             downlist_data = self.getIndexData(item + 1)           
             self.add_line(item + 1, current_data[0], current_data[1], current_data[2], current_data[3], current_data[4], current_data[5], current_data[6])
             self.add_line(item, downlist_data[0], downlist_data[1], downlist_data[2], downlist_data[3], downlist_data[4], downlist_data[5], downlist_data[6])
-            self.tableWidget.selectRow(item + 1) 
+            self.tableWidget.selectRow(item + 1)
+                             
         for i in range(self.tableWidget.rowCount()):    #刷新编号值
+            self.tableWidget.item(i , 2).setFlags(self.tableWidget.item(i , 2).flags() & ~Qt.ItemIsEditable)
             self.tableWidget.setItem(i,1,QtWidgets.QTableWidgetItem(str(i + 1)))
         self.icon_position()
 
@@ -450,8 +490,7 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
 
     # 文件打开及保存按钮点击事件
     def button_flie_operate(self, name):
-        try:
-            
+        try:            
             if name == 'openActionGroup':
                 dig_o = QFileDialog()
                 dig_o.setFileMode(QFileDialog.ExistingFile)
@@ -477,13 +516,17 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
                                     self.tableWidget.setRowCount(count + 1)
                                     for i in range(8):
                                         self.tableWidget.setItem(count, i + 1, QtWidgets.QTableWidgetItem(str(actgrp.value(i))))
-                                        self.tableWidget.item(count, i + 1).setTextAlignment(Qt.AlignCenter)
+                                        if i == 1:
+                                            self.totalTime += actgrp.value(i)
                                         self.tableWidget.update()
-                                        self.tableWidget.selectRow(count)               
+                                        self.tableWidget.selectRow(count)
+                                    self.tableWidget.item(count , 2).setFlags(self.tableWidget.item(count , 2).flags() & ~Qt.ItemIsEditable)                                        
                         self.icon_position()
                         rbt.close()
+                        self.label_TotalTime.setText(str(self.totalTime/1000.0))
                 except:
                     self.message_From('动作组错误')
+                    
             if name == 'saveActionGroup':
                 dig_s = QFileDialog()
                 if self.tableWidget.rowCount() == 0:
@@ -555,11 +598,14 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
                                             self.tableWidget.setItem(count, i + 1, QtWidgets.QTableWidgetItem(str(count + 1)))
                                         else:                      
                                             self.tableWidget.setItem(count, i + 1, QtWidgets.QTableWidgetItem(str(actgrp.value(i))))
-                                        self.tableWidget.item(count, i + 1).setTextAlignment(Qt.AlignCenter)
+                                        if i == 1:
+                                            self.totalTime += actgrp.value(i)
                                         self.tableWidget.update()
-                                        self.tableWidget.selectRow(count)               
+                                        self.tableWidget.selectRow(count)
+                                    self.tableWidget.item(count , 2).setFlags(self.tableWidget.item(count , 2).flags() & ~Qt.ItemIsEditable)
                         self.icon_position()
                         tbt.close()
+                        self.label_TotalTime.setText(str(self.totalTime/1000.0))
                 except:
                     self.message_From('动作组错误')
         except BaseException as e:
@@ -604,25 +650,160 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
             self.servoMaxV = str(self.horizontalSlider_servoMaxV.value()/10)
             self.label_servoMaxV.setText(self.servoMaxV + 'V')
         if name == 'servoMove':
-            self.servoMove = str(self.horizontalSlider_servoMove.value())
+            self.servoMove = str(self.horizontalSlider_servoMove.value())            
             self.label_servoMove.setText(self.servoMove)
+            serial_serro_wirte_cmd(self.id, LOBOT_SERVO_MOVE_TIME_WRITE, int(self.servoMove), 0)
 
     def button_clicked(self, name):
         if name == 'read':
+            try:
+                self.id = serial_servo_read_id()
+                if self.id is None:
+                    self.message_From('读取id失败')
+                    return
+                self.readOrNot = True
+                self.dev = serial_servo_read_deviation(self.id)
+                if self.dev > 125:
+                    self.dev = -(0xff-(self.dev - 1))
+                self.servoTemp = serial_servo_read_temp_limit(self.id)
+                (self.servoMin, self.servoMax) = serial_servo_read_angle_limit(self.id)
+                (self.servoMinV, self.servoMaxV) = serial_servo_read_vin_limit(self.id)
+                self.servoMove = serial_servo_read_pos(self.id)
+                
+                currentVin = serial_servo_read_vin(self.id)
 
-            pass
+                currentTemp = serial_servo_read_temp(self.id)
+
+                self.lineEdit_servoID.setText(str(self.id))
+                self.lineEdit_servoDev.setText(str(self.dev))
+                
+                self.horizontalSlider_servoTemp.setValue(self.servoTemp)
+                self.horizontalSlider_servoMin.setValue(self.servoMin)
+                self.horizontalSlider_servoMax.setValue(self.servoMax)
+                MinV = self.servoMinV
+                MaxV = self.servoMaxV            
+                self.horizontalSlider_servoMinV.setValue(int(MinV/100))
+                self.horizontalSlider_servoMaxV.setValue(int(MaxV/100))
+                self.horizontalSlider_servoMove.setValue(self.servoMove)
+                
+                self.label_servoCurrentP.setText(str(self.servoMove))
+                self.label_servoCurrentV.setText(str(round(currentVin/1000.0, 2)) + 'V')
+                self.label_servoCurrentTemp.setText(str(currentTemp) + '℃')
+            except:
+                self.message_From('读取超时')
+                return
+            
+            self.message_From('读取成功')
+            
         if name == 'set':
-            pass
+            if self.readOrNot is False:
+                self.message_From('请先读取，否则无法获取舵机信息，从而进行设置！')
+                return
+            id = self.lineEdit_servoID.text()
+            if id == '':
+                self.message_From('舵机id参数为空，无法设置')
+                return           
+            dev = self.lineEdit_servoDev.text()
+            if dev is '':
+                dev = 0
+            dev = int(dev)
+            if dev > 125 or dev < -125:
+                self.message_From('偏差参数超出可调节范围-125～125，无法设置')
+                return          
+            temp = self.horizontalSlider_servoTemp.value()
+            pos_min = self.horizontalSlider_servoMin.value()
+            pos_max = self.horizontalSlider_servoMax.value()
+            if pos_min > pos_max:
+                self.message_From('舵机范围参数错误，无法设置')
+                return
+            vin_min = self.horizontalSlider_servoMinV.value()
+            vin_max = self.horizontalSlider_servoMaxV.value()
+            if vin_min > vin_max:
+                self.message_From('舵机电压范围参数错误，无法设置')
+                return
+            pos = self.horizontalSlider_servoMove.value()
+            
+            id = int(id)
+            
+            try:
+                serial_servo_set_id(self.id, id)
+                time.sleep(0.01)
+                if serial_servo_read_id() != id:
+                    self.message_From('id设置失败！')
+                    return           
+                serial_servo_set_deviation(id, dev)
+                time.sleep(0.01)
+                d = serial_servo_read_deviation(id)
+                if d > 125:
+                    d = -(0xff-(d - 1))
+                if d != dev:
+                    self.message_From('偏差设置失败！')
+                    return            
+                serial_servo_set_max_temp(id, temp)
+                time.sleep(0.01)
+                if serial_servo_read_temp_limit(id) != temp:
+                    self.message_From('温度设置失败！')
+                    return 
+                serial_servo_set_angle_limit(id, pos_min, pos_max)
+                time.sleep(0.01)
+                if serial_servo_read_angle_limit(id) != (pos_min, pos_max):
+                    self.message_From('角度范围设置失败！')
+                    return 
+                serial_servo_set_vin_limit(id, vin_min*100, vin_max*100)
+                time.sleep(0.01)
+                if serial_servo_read_vin_limit(id) != (vin_min*100, vin_max*100):
+                    self.message_From('电压范围设置失败！')
+                    return 
+                serial_serro_wirte_cmd(id, LOBOT_SERVO_MOVE_TIME_WRITE, pos, 0)
+            except:
+                self.message_From('设置超时!')
+                return                
+            
+            self.message_From('设置成功')
+            
         if name == 'default':
-            pass
+            if self.readOrNot is False:
+                self.message_From('请先读取，否则无法获取舵机信息，从而进行设置！')
+                return
+            try:
+                serial_servo_set_id(self.id, 1)
+                time.sleep(0.01)
+                if serial_servo_read_id() != 1:
+                    self.message_From('id设置失败！')
+                    return             
+                serial_servo_set_deviation(1, 0)
+                time.sleep(0.01)
+                if serial_servo_read_deviation(1) != 0:
+                    self.message_From('偏差设置失败！')
+                    return
+                serial_servo_set_max_temp(1, 85)
+                time.sleep(0.01)
+                if serial_servo_read_temp_limit(1) != 85:
+                    self.message_From('温度设置失败！')
+                    return
+                serial_servo_set_angle_limit(1, 0, 1000)
+                time.sleep(0.01)
+                if serial_servo_read_angle_limit(1) != (0, 1000):
+                    self.message_From('角度范围设置失败！')
+                    return          
+                serial_servo_set_vin_limit(1, 4500, 12000)
+                time.sleep(0.01)
+                if serial_servo_read_vin_limit(1) != (4500, 12000):
+                    self.message_From('电压范围设置失败！')
+                    return             
+                serial_serro_wirte_cmd(1, LOBOT_SERVO_MOVE_TIME_WRITE, 500, 0)
+            except:
+                self.message_From('设置超时!')
+                return
+            self.message_From('设置成功')
+        if name == 'quit2':
+            sys.exit()
+        if name == 'resetPos':
+            self.horizontalSlider_servoMove.setValue(500)
+            serial_serro_wirte_cmd(self.id, LOBOT_SERVO_MOVE_TIME_WRITE, 500, 0)
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
     app = QtWidgets.QApplication(sys.argv)
     myshow = MainWindow()
     myshow.show()
-    #widget = QtWidgets.QWidget()
-    #ui = Ui_Form()
-    #ui.setupUi(widget)
-    #widget.setWindowIcon(QIcon('web.png'))#增加icon图标，如果没有图片可以没有这句
-    #widget.show()
     sys.exit(app.exec_())

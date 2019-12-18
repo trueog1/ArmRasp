@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'xArmUi.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -265,7 +265,7 @@ class Ui_Form(object):
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(9)
         item = QtWidgets.QTableWidgetItem()
-        item.setTextAlignment(QtCore.Qt.AlignCenter)
+        item.setTextAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignVCenter)
         font = QtGui.QFont()
         font.setFamily("黑体")
         font.setPointSize(11)
@@ -509,11 +509,11 @@ class Ui_Form(object):
         self.label_5.setFont(font)
         self.label_5.setAlignment(QtCore.Qt.AlignCenter)
         self.label_5.setObjectName("label_5")
-        self.label_8 = QtWidgets.QLabel(self.widget_1)
-        self.label_8.setGeometry(QtCore.QRect(70, 65, 41, 20))
-        self.label_8.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.label_8.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_8.setObjectName("label_8")
+        self.label_TotalTime = QtWidgets.QLabel(self.widget_1)
+        self.label_TotalTime.setGeometry(QtCore.QRect(70, 65, 41, 20))
+        self.label_TotalTime.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.label_TotalTime.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_TotalTime.setObjectName("label_TotalTime")
         self.Button_DelectAllAction = QtWidgets.QPushButton(self.widget_1)
         self.Button_DelectAllAction.setGeometry(QtCore.QRect(230, 83, 80, 17))
         font = QtGui.QFont()
@@ -878,7 +878,7 @@ class Ui_Form(object):
         self.horizontalSlider_13.setObjectName("horizontalSlider_13")
         self.frame = QtWidgets.QFrame(self.tab_1)
         self.frame.setGeometry(QtCore.QRect(-10, 30, 501, 511))
-        self.frame.setStyleSheet("background-image: url(:/xArmUi.png);")
+        self.frame.setStyleSheet("background-image: url(:/images/xArmUi.png);")
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
@@ -910,7 +910,7 @@ class Ui_Form(object):
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.pushButton_read = QtWidgets.QPushButton(self.tab_2)
-        self.pushButton_read.setGeometry(QtCore.QRect(330, 490, 100, 50))
+        self.pushButton_read.setGeometry(QtCore.QRect(275, 490, 100, 50))
         font = QtGui.QFont()
         font.setFamily("黑体")
         font.setPointSize(16)
@@ -920,7 +920,7 @@ class Ui_Form(object):
 "QPushButton{border-radius:5px;}")
         self.pushButton_read.setObjectName("pushButton_read")
         self.pushButton_set = QtWidgets.QPushButton(self.tab_2)
-        self.pushButton_set.setGeometry(QtCore.QRect(470, 490, 100, 50))
+        self.pushButton_set.setGeometry(QtCore.QRect(425, 490, 100, 50))
         font = QtGui.QFont()
         font.setFamily("黑体")
         font.setPointSize(16)
@@ -930,7 +930,7 @@ class Ui_Form(object):
 "QPushButton{border-radius:5px;}")
         self.pushButton_set.setObjectName("pushButton_set")
         self.pushButton_default = QtWidgets.QPushButton(self.tab_2)
-        self.pushButton_default.setGeometry(QtCore.QRect(610, 490, 100, 50))
+        self.pushButton_default.setGeometry(QtCore.QRect(575, 490, 100, 50))
         font = QtGui.QFont()
         font.setFamily("黑体")
         font.setPointSize(16)
@@ -1095,7 +1095,7 @@ class Ui_Form(object):
         self.label_servoCurrentP.setAlignment(QtCore.Qt.AlignCenter)
         self.label_servoCurrentP.setObjectName("label_servoCurrentP")
         self.label_servoCurrentV = QtWidgets.QLabel(self.widget_8)
-        self.label_servoCurrentV.setGeometry(QtCore.QRect(140, 75, 41, 31))
+        self.label_servoCurrentV.setGeometry(QtCore.QRect(130, 75, 61, 31))
         font = QtGui.QFont()
         font.setFamily("黑体")
         font.setPointSize(12)
@@ -1170,7 +1170,7 @@ class Ui_Form(object):
         self.label_24.setFont(font)
         self.label_24.setObjectName("label_24")
         self.widget_11 = QtWidgets.QWidget(self.tab_2)
-        self.widget_11.setGeometry(QtCore.QRect(670, 320, 240, 90))
+        self.widget_11.setGeometry(QtCore.QRect(670, 310, 240, 131))
         self.widget_11.setStyleSheet("#widget_11 {border:1px solid #242424;\n"
 "border-color: rgb(200, 200, 200);}")
         self.widget_11.setObjectName("widget_11")
@@ -1198,6 +1198,16 @@ class Ui_Form(object):
         self.label_servoMove.setFont(font)
         self.label_servoMove.setAlignment(QtCore.Qt.AlignCenter)
         self.label_servoMove.setObjectName("label_servoMove")
+        self.pushButton_resetPos = QtWidgets.QPushButton(self.widget_11)
+        self.pushButton_resetPos.setGeometry(QtCore.QRect(80, 80, 71, 41))
+        font = QtGui.QFont()
+        font.setFamily("黑体")
+        font.setPointSize(16)
+        self.pushButton_resetPos.setFont(font)
+        self.pushButton_resetPos.setStyleSheet("QPushButton{background-color: rgb(255, 165, 0);}\n"
+"QPushButton:hover{background-color:  rgb(255, 210, 0);}\n"
+"QPushButton{border-radius:5px;}")
+        self.pushButton_resetPos.setObjectName("pushButton_resetPos")
         self.label_36 = QtWidgets.QLabel(self.tab_2)
         self.label_36.setGeometry(QtCore.QRect(230, 30, 571, 22))
         font = QtGui.QFont()
@@ -1206,10 +1216,23 @@ class Ui_Form(object):
         self.label_36.setFont(font)
         self.label_36.setAlignment(QtCore.Qt.AlignCenter)
         self.label_36.setObjectName("label_36")
+        self.pushButton_quit2 = QtWidgets.QPushButton(self.tab_2)
+        self.pushButton_quit2.setGeometry(QtCore.QRect(725, 490, 100, 50))
+        font = QtGui.QFont()
+        font.setFamily("黑体")
+        font.setPointSize(16)
+        self.pushButton_quit2.setFont(font)
+        self.pushButton_quit2.setStyleSheet("QPushButton{background-color: rgb(255, 165, 0);}\n"
+"QPushButton:hover{background-color:  rgb(255, 210, 0);}\n"
+"QPushButton{border-radius:5px;}")
+        self.pushButton_quit2.setObjectName("pushButton_quit2")
         self.tabWidget.addTab(self.tab_2, "")
+        self.tab = QtWidgets.QWidget()
+        self.tab.setObjectName("tab")
+        self.tabWidget.addTab(self.tab, "")
 
         self.retranslateUi(Form)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
@@ -1264,7 +1287,7 @@ class Ui_Form(object):
         self.label_time_2.setText(_translate("Form", "总时长"))
         self.label.setText(_translate("Form", "ms"))
         self.label_5.setText(_translate("Form", "s"))
-        self.label_8.setText(_translate("Form", "0"))
+        self.label_TotalTime.setText(_translate("Form", "0"))
         self.Button_DelectAllAction.setText(_translate("Form", "删除全部"))
         self.label_ID5.setText(_translate("Form", "ID:5"))
         self.lineEdit_5.setText(_translate("Form", "500"))
@@ -1314,7 +1337,10 @@ class Ui_Form(object):
         self.label_24.setText(_translate("Form", "-125~125"))
         self.label_34.setText(_translate("Form", "舵机调试"))
         self.label_servoMove.setText(_translate("Form", "500"))
+        self.pushButton_resetPos.setText(_translate("Form", "中位"))
         self.label_36.setText(_translate("Form", "<html><head/><body><p><span style=\" color:#ff0000;\">注意：使用下面的功能时，请确保控制器只连接了一个舵机，否则会引起冲突!</span></p></body></html>"))
+        self.pushButton_quit2.setText(_translate("Form", "退出"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Form", "舵机调试工具"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Form", "摄像头工具"))
 
-
+import resource_rc
