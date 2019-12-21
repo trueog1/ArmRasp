@@ -1,4 +1,8 @@
+import os
+import re
+import cv2
 import sys
+import math
 import sqlite3
 import threading
 import resource_rc
@@ -79,8 +83,8 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
         self.Button_ReadDeviation.pressed.connect(lambda: self.button_flie_operate('readDeviation'))
         self.Button_DownloadDeviation.pressed.connect(lambda: self.button_flie_operate('downloadDeviation'))
         self.Button_TandemActionGroup.pressed.connect(lambda: self.button_flie_operate('tandemActionGroup'))
-        self.Button_ReSetServos.clicked.connect(lambda: self.button_clicked('reSetServos'))
-        self.Button_ReSetDev.clicked.connect(lambda: self.button_clicked('reSetDev'))
+        self.Button_ReSetServos.pressed.connect(lambda: self.button_re_clicked('reSetServos'))
+        self.Button_ReSetDev.pressed.connect(lambda: self.button_re_clicked('reSetDev'))
         
         # 将控制动作的按钮点击的信号与action_control_clicked函数绑定
         self.Button_DelectSingle.pressed.connect(lambda: self.button_controlaction_clicked('delectSingle'))
@@ -93,7 +97,7 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
         self.devNew = [0, 0, 0, 0, 0, 0]
         self.devOld = [0, 0, 0, 0, 0, 0]
         self.totalTime = 0
-        #################################副界面#######################################
+        #################################副界面1#######################################
         self.id = 0
         self.dev = 0
         self.servoTemp = 0
@@ -121,6 +125,61 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
         self.tabWidget.currentChanged['int'].connect(self.tabchange)
         self.readOrNot = False
         
+        #################################副界面2#######################################
+        self.file = 'config.py'
+        self.color = 'red'
+        self.L_Min = 0
+        self.A_Min = 0
+        self.B_Min = 0
+        self.L_Max = 255
+        self.A_Max = 255
+        self.B_Max = 255
+        self.servo1 = 1500
+        self.servo2 = 1500
+        self.kernel_open = 3
+        self.kernel_close = 3
+        self.camera_ui = False
+        self.camera_ui_break = False
+        self.cmd_restart = "sudo systemctl restart mjpg_streamer@"
+        self.cmd_stop = "sudo systemctl stop mjpg_streamer@"
+        
+        self.horizontalSlider_LMin.valueChanged.connect(lambda: self.horizontalSlider_labvaluechange('lmin'))
+        self.horizontalSlider_AMin.valueChanged.connect(lambda: self.horizontalSlider_labvaluechange('amin'))
+        self.horizontalSlider_BMin.valueChanged.connect(lambda: self.horizontalSlider_labvaluechange('bmin'))
+        self.horizontalSlider_LMax.valueChanged.connect(lambda: self.horizontalSlider_labvaluechange('lmax'))
+        self.horizontalSlider_AMax.valueChanged.connect(lambda: self.horizontalSlider_labvaluechange('amax'))
+        self.horizontalSlider_BMax.valueChanged.connect(lambda: self.horizontalSlider_labvaluechange('bmax'))
+
+        self.horizontalSlider_servo1.valueChanged.connect(lambda: self.horizontalSlider_servovaluechange('servo1'))
+        self.horizontalSlider_servo2.valueChanged.connect(lambda: self.horizontalSlider_servovaluechange('servo2'))
+
+        self.pushButton_connect.pressed.connect(lambda: self.on_pushButton_action_clicked('connect'))
+        self.pushButton_disconnect.pressed.connect(lambda: self.on_pushButton_action_clicked('disconnect'))
+        self.pushButton_labWrite.pressed.connect(lambda: self.on_pushButton_action_clicked('labWrite'))
+        self.pushButton_servoReset.pressed.connect(lambda: self.on_pushButton_action_clicked('servoReset')) 
+        self.pushButton_servoWrite.pressed.connect(lambda: self.on_pushButton_action_clicked('servoWrite'))
+        self.comboBox_color.addItems(['red', 'green', 'blue', 'black', 'white'])
+        self.comboBox_color.currentIndexChanged.connect(self.selectionchange)       
+                                                                                             
+        f = self.file
+
+        self.createConfig()
+        file = open(f, 'r')
+        for i in file:
+            if re.search('servo1', i):
+                self.servo1 = int(re.findall('\d+', i)[1])
+            elif re.search('servo2', i):
+                self.servo2 = int(re.findall('\d+', i)[1])
+                                                                                     
+        file.close()
+        self.horizontalSlider_servo1.setValue(self.servo1)
+        self.horizontalSlider_servo2.setValue(self.servo2)
+        self.label_servo1.setNum(self.servo1)
+        self.label_servo2.setNum(self.servo2)  
+##        PWMServo.setServo(1, self.servo1, 20)           
+##        PWMServo.setServo(2, self.servo2, 20)                      
+        self.selectionchange()
+        
     # 弹窗提示函数
     def message_From(self, str):
         messageBox = QMessageBox()
@@ -138,85 +197,121 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
         messageBox.addButton(QPushButton('取消'), QMessageBox.NoRole)
         return messageBox.exec_()
 
+    # 窗口退出
+    def closeEvent(self, e):        
+        result = QMessageBox.question(self,
+                                    "关闭窗口提醒",
+                                    "是否退出?",
+                                    QMessageBox.Yes | QMessageBox.No,
+                                    QMessageBox.No)
+        if result == QMessageBox.Yes:
+            self.camera_ui = True
+            self.camera_ui_break = True
+            QWidget.closeEvent(self, e)
+        else:
+            e.ignore()
+
+    def keyPressEvent(self, event):
+        if event.key() == 16777220:           
+            self.horizontalSlider_1.setValue(int(self.lineEdit_1.text()))
+            self.horizontalSlider_2.setValue(int(self.lineEdit_2.text()))
+            self.horizontalSlider_3.setValue(int(self.lineEdit_3.text()))
+            self.horizontalSlider_4.setValue(int(self.lineEdit_4.text()))
+            self.horizontalSlider_5.setValue(int(self.lineEdit_5.text()))
+            self.horizontalSlider_6.setValue(int(self.lineEdit_6.text()))       
+    
     def tabchange(self):
         if self.tabWidget.currentIndex() == 1:
             self.message_From('注意，使用此面板功能时，请确保控制器只连接了一个舵机，否则会引起冲突！')           
               
     def tcpsocket_receive(self):
         while True:
-            recv_data = self.client.recv(1024).decode()
-            recv = recv_data.split('\r\n')          
-            cmd = recv[0][:4]
-            id = ''
-            dev = []
-            angle = []
-            if cmd == 'I004':
-                recv = recv[0].split('-')
-                if int(recv[1]) == len(recv) - 2:
-                    self.comboBox_action.clear()
-                    for i in range(2, len(recv)):
-                        self.comboBox_action.addItem(recv[i])
-                elif int(recv[1]) == 0:
-                    self.comboBox_action.clear()
-                else:
-                    self.message_From('动作组列表获取失败!')
-            if cmd == 'I008':
-                recv = recv[0].split('-')
-                if recv[3] == 'ok':
-                    self.message_From('下载偏差成功!')
-                elif recv[3] == 'no':
-                    self.message_From('偏差数量错误，下载失败!')
-                elif recv[3] == 'timeout':
-                    self.message_From('超时，下载失败!')
-                else:
-                    self.message_From('偏差值超出范围-125~125，下载失败!')
-                print(recv)
-            if cmd == 'I009':
-                recv = recv[0].split('-')
-                if int(recv[1]) == len(recv) - 2:
-                    for i in range(2, len(recv)):
-                        if recv[i] == '999':
-                            dev.append(0)
-                            id += str(i - 2)
-                        else:
-                            dev.append(int(recv[i]))
-                    if id == '':                        
-                        self.message_From('读取偏差成功!')
+            try:
+                recv_data = self.client.recv(1024).decode()
+                recv = recv_data.split('\r\n')          
+                cmd = recv[0][:4]
+                id = ''
+                dev = []
+                angle = []
+##                print(recv)
+                if cmd == 'I004':
+                    recv = recv[0].split('-')
+                    if int(recv[1]) == len(recv) - 2:
+                        self.comboBox_action.clear()
+                        for i in range(2, len(recv)):
+                            self.comboBox_action.addItem(recv[i])
+                    elif int(recv[1]) == 0:
+                        self.comboBox_action.clear()
                     else:
-                        self.message_From('id' + id + '号舵机偏差读取失败!')
-                    self.setDev(dev)
-                else:
-                    self.message_From('未检测到舵机，读取偏差失败!')
-            if cmd == 'I010':
-                recv = recv[0].split('-')
-                if recv[3] == 'ok':
-                    self.message_From('成功!')
-                elif recv[3] == 'no':
-                    self.message_From('失败!')
-                elif recv[3] == 'timeout':
-                    self.message_From('超时!')                    
-                else:
-                    self.message_From('指令错误!')
-            if cmd == 'I011':
-                recv = recv[0].split('-')
-                if recv[1] == 'timeout':
-                    self.message_From('超时!')
-                    return
-                if int(recv[1]) == len(recv) - 2:
-                    for i in range(2, len(recv)):
-                        if recv[i] > 1000:
-                            recv[i] = 1000
-                        elif recv[i] < 0:
-                            recv[i] = 0
-                        angle.append(recv[i])
-                    RowCont = self.tableWidget.rowCount()
-                    self.tableWidget.insertRow(RowCont)    # 增加一行
-                    self.tableWidget.selectRow(RowCont)    # 定位最后一行为选中行                       
-                    self.add_line(RowCont, str(self.lineEdit_time.text()), angle[0], angle[1], angle[2], angle[3], angle[4], angle[5])
-                    self.totalTime += int(self.lineEdit_time.text())
-                    self.label_TotalTime.setText(str((self.totalTime)/1000.0))               
-                else:
-                    self.message_From('指令长度错误!')                      
+                        self.message_From('动作组列表获取失败!')
+                if cmd == 'I008':
+                    recv = recv[0].split('-')
+                    if recv[2] == 'ok':
+                        self.message_From('下载偏差成功!')
+                    elif recv[2] == 'no':
+                        self.message_From('偏差数量错误，下载失败!')
+                    elif recv[2] == 'timeout':
+                        self.message_From('超时，下载失败!')
+                    else:
+                        self.message_From('偏差值超出范围-125~125，下载失败!')
+                    print(recv)
+                if cmd == 'I009':
+                    recv = recv[0].split('-')
+                    id = ''
+                    print(recv)
+                    if int(recv[1]) <= len(recv) - 2:
+                        for i in range(3, len(recv), 2):
+                            if recv[i] == '999':
+                                dev.append(0)
+                                id += ' ' + 'id' + str(int((i - 1)/2))
+                            elif int(recv[i]) > 125:  # 负数
+                                dev.append((0xff - (int(recv[i]) - 1)))                         
+                            else:
+                                dev.append(int(recv[i]))
+                        if id == '':                        
+                            self.message_From('读取偏差成功!')
+                        else:
+                            self.message_From(id + '号舵机偏差读取失败!')
+                        self.setDev(dev)
+                    else:
+                        self.message_From('未检测到舵机，读取偏差失败!')
+                if cmd == 'I010':
+                    
+                    recv = recv[0].split('-')
+                    print(recv)
+                    if recv[2] == 'ok':
+                        self.message_From('成功!')
+                    elif recv[2] == 'no':
+                        self.message_From('失败!')
+                    elif recv[2] == 'timeout':
+                        self.message_From('超时!')                    
+                    else:
+                        self.message_From('指令错误!')
+                if cmd == 'I011':
+                    
+                    recv = recv[0].split('-')
+                    print(recv)
+                    if recv[1] == 'timeout':
+                        self.message_From('超时!')
+                        return
+                    if int(recv[1]) == len(recv) - 2:
+                        for i in range(2, len(recv)):
+                            if int(recv[i]) > 1000:
+                                recv[i] = 1000
+                            elif int(recv[i]) < 0:
+                                recv[i] = 0
+                            angle.append(recv[i])
+                        print(angle)
+                        RowCont = self.tableWidget.rowCount()
+                        self.tableWidget.insertRow(RowCont)    # 增加一行
+                        self.tableWidget.selectRow(RowCont)    # 定位最后一行为选中行                       
+                        self.add_line(RowCont, str(self.lineEdit_time.text()), angle[0], angle[1], angle[2], angle[3], angle[4], angle[5])
+                        self.totalTime += int(self.lineEdit_time.text())
+                        self.label_TotalTime.setText(str((self.totalTime)/1000.0))               
+                    else:
+                        self.message_From('指令长度错误!')
+            except:
+                pass
  
     # 滑竿同步对应文本框的数值,及滑竿控制相应舵机转动
     def valuechange1(self, name):
@@ -249,32 +344,47 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
             self.client.send(cmd.encode())
 
     def valuechange2(self, name):
+        cmd = None
         if name == 'd1':
-            self.devNew[0] = str(self.horizontalSlider_11.value())
-            self.label_d1.setText(self.devNew[0])
+            self.devNew[0] = self.horizontalSlider_11.value()
+            self.label_d1.setText(str(self.devNew[0]))
+            servoAngle = str(self.horizontalSlider_1.value() + self.devNew[0])
+            cmd = 'I001-20-1-1-' + servoAngle + '\r\n'
         if name == 'd2':
-            self.devNew[1] = str(self.horizontalSlider_12.value())
-            self.label_d2.setText(self.devNew[1])
+            self.devNew[1] = self.horizontalSlider_12.value()
+            self.label_d2.setText(str(self.devNew[1]))
+            servoAngle = str(self.horizontalSlider_2.value() + self.devNew[1])
+            cmd = 'I001-20-1-2-' + servoAngle + '\r\n'            
         if name == 'd3':
-            self.devNew[2] = str(self.horizontalSlider_13.value())
-            self.label_d3.setText(self.devNew[2])
+            self.devNew[2] = self.horizontalSlider_13.value()
+            self.label_d3.setText(str(self.devNew[2]))
+            servoAngle = str(self.horizontalSlider_3.value() + self.devNew[2])
+            cmd = 'I001-20-1-3-' + servoAngle + '\r\n' 
         if name == 'd4':
-            self.devNew[3] = str(self.horizontalSlider_14.value())
-            self.label_d4.setText(self.devNew[3])
+            self.devNew[3] = self.horizontalSlider_14.value()
+            self.label_d4.setText(str(self.devNew[3]))
+            servoAngle = str(self.horizontalSlider_4.value() + self.devNew[3])
+            cmd = 'I001-20-1-4-' + servoAngle + '\r\n'             
         if name == 'd5':
-            self.devNew[4] = str(self.horizontalSlider_15.value())
-            self.label_d5.setText(self.devNew[4])
+            self.devNew[4] = self.horizontalSlider_15.value()
+            self.label_d5.setText(str(self.devNew[4]))
+            servoAngle = str(self.horizontalSlider_5.value() + self.devNew[4])
+            cmd = 'I001-20-1-5-' + servoAngle + '\r\n'             
         if name == 'd6':
-            self.devNew[5] = str(self.horizontalSlider_16.value())
-            self.label_d6.setText(self.devNew[5])
-
+            self.devNew[5] = self.horizontalSlider_16.value()
+            self.label_d6.setText(str(self.devNew[5]))
+            servoAngle = str(self.horizontalSlider_6.value() + self.devNew[5])
+            cmd = 'I001-20-1-6-' + servoAngle + '\r\n'         
+        if cmd is not None:
+            self.client.send(cmd.encode())
+            
     def setDev(self, dev=[0, 0, 0, 0, 0, 0]):
-        self.horizontalSlider_11.setValue(dev[0])
-        self.horizontalSlider_12.setValue(dev[1])
-        self.horizontalSlider_13.setValue(dev[2])
-        self.horizontalSlider_14.setValue(dev[3])
-        self.horizontalSlider_15.setValue(dev[4])
-        self.horizontalSlider_16.setValue(dev[5])
+##        self.horizontalSlider_11.setValue(dev[0])
+##        self.horizontalSlider_12.setValue(dev[1])
+##        self.horizontalSlider_13.setValue(dev[2])
+##        self.horizontalSlider_14.setValue(dev[3])
+##        self.horizontalSlider_15.setValue(dev[4])
+##        self.horizontalSlider_16.setValue(dev[5])
 
         self.label_d1.setText(str(dev[0]))
         self.label_d2.setText(str(dev[1]))
@@ -284,7 +394,7 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
         self.label_d6.setText(str(dev[5]))          
 
     # 复位按钮点击事件
-    def button_clicked(self, name):
+    def button_re_clicked(self, name):
         if name == 'reSetServos':
             self.horizontalSlider_1.setValue(500)
             self.horizontalSlider_2.setValue(500)
@@ -299,6 +409,7 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
             self.lineEdit_4.setText('500')
             self.lineEdit_5.setText('500')
             self.lineEdit_6.setText('500')
+            
             cmd = 'I001-500-6-1-500-2-500-3-500-4-500-5-500-6-500\r\n'
             self.client.send(cmd.encode())
         elif name == 'reSetDev':
@@ -332,7 +443,7 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
     def icon_position(self):
         toolButton_run = QtWidgets.QToolButton()
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/index.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/images/index.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         toolButton_run.setIcon(icon)
         toolButton_run.setObjectName("toolButton_run")
         item = self.tableWidget.currentRow()
@@ -392,7 +503,7 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
                     self.tableWidget.removeRow(0)
                 self.label_TotalTime.setText('0')
             else:
-                pass            
+                pass          
         if name == 'updateAction':    # 更新动作
             self.add_line(item, str(self.lineEdit_time.text()), list[0], list[1], list[2], list[3], list[4], list[5])
             self.totalTime = 0
@@ -623,16 +734,22 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
             else:
                 pass
         if name == 'runAction':   # 动作组运行
-            cmd = 'I003-' + str(self.comboBox_action.currentText()) + '-1\r\n'
+            cmd = 'I003-' + str(self.comboBox_action.currentText()) + '\r\n'
         if name == 'stopAction':   # 停止运行
             cmd = 'I002\r\n'
         if name == 'reflash':
             cmd = 'I004\r\n'
         if name == 'quit':
+            self.camera_ui = True
+            self.camera_ui_break = True
+            try:
+                self.cap.release()
+            except:
+                pass
             sys.exit()
         if cmd is not None:
             self.client.send(cmd.encode())
-
+    ################################################################################################
     def horizontalSlider_valuechange(self, name):
         if name == 'servoTemp':
             self.temp = str(self.horizontalSlider_servoTemp.value())
@@ -797,11 +914,235 @@ class MainWindow(QtWidgets.QWidget, Ui_Form):
                 return
             self.message_From('设置成功')
         if name == 'quit2':
+            self.camera_ui = True
+            self.camera_ui_break = True
+            try:
+                self.cap.release()
+            except:
+                pass          
             sys.exit()
         if name == 'resetPos':
             self.horizontalSlider_servoMove.setValue(500)
             serial_serro_wirte_cmd(self.id, LOBOT_SERVO_MOVE_TIME_WRITE, 500, 0)
+    ################################################################################################
+    #获取面积最大的轮廓
+    def getAreaMaxContour(self,contours) :
+            contour_area_temp = 0
+            contour_area_max = 0
+            area_max_contour = None;
 
+            for c in contours :
+                contour_area_temp = math.fabs(cv2.contourArea(c)) #计算面积
+                if contour_area_temp > contour_area_max : #新面积大于历史最大面积就将新面积设为历史最大面积
+                    contour_area_max = contour_area_temp
+                    if contour_area_temp > 100: #只有新的历史最大面积大于100,才是有效的最大面积
+                                               #就是剔除过小的轮廓
+                        area_max_contour = c
+
+            return area_max_contour #返回得到的最大面积，如果没有就是 None
+    
+    def show_image(self):
+        self.cap = cv2.VideoCapture(self.stream)
+        count = 0
+        while self.camera_ui_break is False:
+            while self.camera_ui is False:
+                try:
+                    if self.cap.isOpened():
+                        # 从摄像头读取一帧，ret是表明成功与否
+                        ret, orgframe = self.cap.read()
+                        if ret:
+                            try:                        
+                                orgFrame = cv2.resize(orgframe, (480, 360))
+                                frame_lab = cv2.cvtColor(orgFrame, cv2.COLOR_BGR2LAB)
+                                mask = cv2.inRange(frame_lab, (self.L_Min, self.A_Min, self.B_Min), (self.L_Max, self.A_Max, self.B_Max))#对原图像和掩模进行位运算
+                                opend = cv2.morphologyEx(mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (self.kernel_open, self.kernel_open)))
+                                closed = cv2.morphologyEx(opend, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (self.kernel_close, self.kernel_close)))
+                                showImage = QImage(closed.data, closed.shape[1], closed.shape[0], QImage.Format_Indexed8)
+                                temp_pixmap = QPixmap.fromImage(showImage)
+                                self.label_process.setPixmap(temp_pixmap)
+
+                                frame_rgb = cv2.cvtColor(orgFrame, cv2.COLOR_BGR2RGB)
+                                showframe = QImage(frame_rgb.data, frame_rgb.shape[1], frame_rgb.shape[0], QImage.Format_RGB888)
+                                t_p = QPixmap.fromImage(showframe)
+                                self.label_orign.setPixmap(t_p)
+                            except BaseException as e:
+                                print(e)
+                                pass
+                        else:
+                            time.sleep(0.01)
+                    else:
+                        count += 1
+                        time.sleep(0.01)
+                        if count > 200:                            
+                            self.camera_ui = True
+                            self.cap.release()
+                            self.message_From('连接失败, 端口错误！')
+                            break
+                except:
+                    self.message_From('端口错误！')
+                    self.cap.release()
+                    self.camera_ui = True
+                    break
+
+    def horizontalSlider_labvaluechange(self, name):
+        if name == 'lmin': 
+            self.L_Min = self.horizontalSlider_LMin.value()
+            self.label_LMin.setNum(self.L_Min)
+        if name == 'amin':
+            self.A_Min = self.horizontalSlider_AMin.value()
+            self.label_AMin.setNum(self.A_Min)
+        if name == 'bmin':
+            self.B_Min = self.horizontalSlider_BMin.value()
+            self.label_BMin.setNum(self.B_Min)
+        if name == 'lmax':
+            self.L_Max = self.horizontalSlider_LMax.value()
+            self.label_LMax.setNum(self. L_Max)
+        if name == 'amax':
+            self.A_Max = self.horizontalSlider_AMax.value()
+            self.label_AMax.setNum(self.A_Max)
+        if name == 'bmax':
+            self.B_Max = self.horizontalSlider_BMax.value()
+            self.label_BMax.setNum(self.B_Max)
+
+    def horizontalSlider_servovaluechange(self, name):
+        if name == 'servo1':                                                                                     
+            self.servo1 = self.horizontalSlider_servo1.value()
+    ##        PWMServo.setServo(1, self.servo1, 20)
+            self.label_servo1.setNum(self.servo1)
+        if name == 'servo2':
+            self.servo2 = self.horizontalSlider_servo2.value()
+    ##        PWMServo.setServo(2, self.servo2, 20)
+            self.label_servo2.setNum(self.servo2)
+            
+    def createConfig(self, c=False):
+        if not os.path.isfile(self.file) or c:
+            file = open(self.file, 'w')
+            data = '''#!/usr/bin/python3
+#coding=utf8
+import sys
+
+servo1 = 1500 
+servo2 = 1500 
+
+#颜色的字典
+color_range = {
+'red': [(0, 147, 0), (255, 255, 166)], 
+'green': [(0, 0, 0), (255, 106, 255)], 
+'blue': [(0, 0, 0), (255, 255, 120)],
+'black': [(0, 0, 0), (56, 255, 255)], 
+'white': [(193, 0, 0), (255, 250, 255)], 
+              }
+'''
+            file.write(data)
+            file.close()
+                          
+    def getColorValue(self, color):
+        f = self.file
+        file = open(f, 'r')
+        for i in file:
+            if re.search(color, i):
+                value = re.findall('\d+', i)
+                self.L_Min = int(value[0])
+                self.A_Min = int(value[1])
+                self.B_Min = int(value[2])
+                self.L_Max = int(value[3])
+                self.A_Max = int(value[4])
+                self.B_Max = int(value[5])
+                break
+        file.close()
+        self.horizontalSlider_LMin.setValue(self.L_Min)
+        self.horizontalSlider_AMin.setValue(self.A_Min)
+        self.horizontalSlider_BMin.setValue(self.B_Min)
+        self.horizontalSlider_LMax.setValue(self.L_Max)
+        self.horizontalSlider_AMax.setValue(self.A_Max)
+        self.horizontalSlider_BMax.setValue(self.B_Max)
+
+    def selectionchange(self):
+        self.color = self.comboBox_color.currentText()      
+        self.getColorValue(self.color)
+        
+    def on_pushButton_action_clicked(self, buttonName):
+        if buttonName == 'labWrite':
+            if self.color == 'red':
+                line = 10
+            elif self.color == 'green':
+                line = 11
+            elif self.color == 'blue':
+                line = 12
+            elif self.color == 'black':
+                line = 13
+            elif self.color == 'white':
+                line = 14
+            else:
+                line = 0
+            try:
+                if line != 0:
+                    f = self.file
+                    f_copy = 'copy' + self.file
+                    os.system('sudo cp ' + f + ' ' + f_copy)
+                    old_f = open(f_copy, 'r')
+                    new_f = open(f, 'w')
+                    number = 0
+                    for i in old_f:
+                        number += 1
+                        if number == line:
+                            i = '\'' + self.color + '\''+ ': [({}, {}, {}), ({}, {}, {})], \n'.\
+                                    format(self.L_Min, self.A_Min, self.B_Min, self.L_Max, self.A_Max, self.B_Max)
+                        new_f.write(i)
+                    old_f.close()
+                    new_f.close()
+                    os.system('sudo rm ' + f_copy)
+            except:
+                self.message_From('保存失败！')
+                return
+            self.message_From('保存成功！')
+        elif buttonName == 'servoReset':
+            self.horizontalSlider_servo1.setValue(1500)
+            self.horizontalSlider_servo2.setValue(1500)
+        elif buttonName == 'servoWrite':
+            try:
+                f = self.file
+                f_copy = 'copy' + self.file
+                os.system('sudo cp ' + f + ' ' + f_copy)
+                old_f = open(f_copy, 'r')
+                new_f = open(f, 'w')
+                number = 0
+                for i in old_f:
+                    number += 1
+                    if number == 5:
+                        i = 'servo1 = {} \n'.format(self.servo1)
+                    elif number == 6:
+                        i = 'servo2 = {} \n'.format(self.servo2)
+                    new_f.write(i)
+                old_f.close()
+                new_f.close()
+                os.system('sudo rm ' + f_copy)
+            except:
+                self.message_From('保存失败！')
+                return
+            self.message_From('保存成功！')
+        elif buttonName == 'connect':
+            self.camera_ui_break = True
+            self.camera_ui = True           
+            self.stream = self.lineEdit.text()
+            if len(self.stream) != 0 and len(self.stream) < 3:
+                try:
+                    self.stream = int(self.stream)
+                except:
+                    self.message_From('端口错误！')
+                    return
+            time.sleep(0.1)
+            self.camera_ui_break = False
+            self.camera_ui = False                
+            # 建立图像显示线程
+            self.client_th = threading.Thread(target=self.show_image)
+            # 线程连接成功后才开启
+            self.client_th.start()
+        elif buttonName == 'disconnect':
+            self.camera_ui = True
+            self.camera_ui_break = True
+            self.cap.release()
+                        
 if __name__ == "__main__":  
     app = QtWidgets.QApplication(sys.argv)
     myshow = MainWindow()
