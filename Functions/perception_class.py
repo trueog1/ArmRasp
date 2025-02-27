@@ -141,6 +141,9 @@ class Perception():
                 closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6,6),np.uint8)) 
                 contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]  
 
+                if not contours:
+                    continue
+                
                 largest_contour = max(contours, key=cv2.contourArea)
                 largest_contour_area = cv2.contourArea(largest_contour)
 
