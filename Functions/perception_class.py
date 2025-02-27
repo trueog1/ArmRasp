@@ -45,6 +45,7 @@ class Perception():
 
 
     def finding_objects(self):
+        self.camera.camera_open()
         while True:
             img = self.camera.frame
             if img is not None:
