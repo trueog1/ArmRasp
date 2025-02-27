@@ -61,6 +61,8 @@ class Perception():
 
     def processing_image(self, img):
 
+        #img = img.copy()
+
         img_h, img_w = img.shape[:2]
 
         #draw on calibration +
@@ -130,9 +132,9 @@ class Perception():
 
 
     def area_of_interest_processing(self, frame_lab):
-        self.color_area_max = None
+        self.best_contour = None
         self.max_area = 0
-        self.areaMaxContour_max = 0
+        self.color_of_interest = None
 
         for color in color_range:
             if color in self.target_color:
@@ -147,8 +149,8 @@ class Perception():
                 largest_contour = max(contours, key=cv2.contourArea)
                 largest_contour_area = cv2.contourArea(largest_contour)
 
-                if largest_contour_area > self.best_contour_area:
-                    self.best_contour_area = largest_contour_area
+                if largest_contour_area > self.max_area:
+                    self.max_area = largest_contour_area
                     self.best_contour = largest_contour
                     self.color_of_interest = color
 
