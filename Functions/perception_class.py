@@ -80,8 +80,8 @@ class Perception():
             box = np.int0(cv2.boxPoints(rect))
             
             self.roi = getROI(box)
-            img_x, img_y = getCenter(rect, self.roi, self.img_size, square_length)
-            world_x, world_y = convertCoordinate(img_x, img_y, self.img_size)
+            img_x, img_y = getCenter(rect, self.roi, self.size, square_length)
+            world_x, world_y = convertCoordinate(img_x, img_y, self.size)
 
             cv2.drawContours(img, [box], -1, self.color_range[self.color_of_interest], 2)
             cv2.putText(img, f'({world_x}, {world_y})', (min(box[0, 0], box[2, 0]), box[2, 1] - 10), 
