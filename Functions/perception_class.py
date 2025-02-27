@@ -49,8 +49,8 @@ class Perception():
         while True:
             img = self.camera.frame
             if img is not None:
-                #frame = img.copy()
-                Frame = self.processing_image(img)           
+                frame = img.copy()
+                Frame = self.processing_image(frame)           
                 cv2.imshow('Frame', Frame)
                 key = cv2.waitKey(1)
                 if key == 27:
