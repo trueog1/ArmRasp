@@ -97,7 +97,7 @@ class Perception():
         else:
             color_location = 0
             
-        self.seen_colours.append(color_location)
+        self.color_list.append(color_location)
 
         if distance < self.movement_change_thresh:
             self.center_locations.extend((world_x, world_y))
@@ -119,7 +119,7 @@ class Perception():
                 self.draw_colour = self.color_range['black']
                     
                 
-            self.seen_colours = []
+            self.color_list = []
 
         else:
             self.draw_colour = (0, 0, 0)
