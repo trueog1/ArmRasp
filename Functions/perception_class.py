@@ -40,7 +40,7 @@ class Perception():
         self.previous_time = time.time()
         self.time_thresh = 1.0
         self.current_colour = "None"
-        self.draw_colour = self.possible_colour_values['black']
+        self.draw_colour = self.color_range['black']
         self.rotation_angle = 0
 
 
@@ -82,10 +82,10 @@ class Perception():
             img_x, img_y = getCenter(rect, self.roi, self.img_size, square_length)
             world_x, world_y = convertCoordinate(img_x, img_y, self.img_size)
 
-            cv2.drawContours(img, [box], -1, self.possible_colour_values[self.color_of_interest], 2)
+            cv2.drawContours(img, [box], -1, self.color_range[self.color_of_interest], 2)
             cv2.putText(img, f'({world_x}, {world_y})', (min(box[0, 0], box[2, 0]), box[2, 1] - 10), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, 
-                        self.possible_colour_values[self.color_of_interest], 1) 
+                        self.color_range[self.color_of_interest], 1) 
 
             distance = math.sqrt((world_x - self.last_x)**2 + (world_y - self.last_y)**2)
             self.last_x, self.last_y = world_x, world_y
@@ -115,7 +115,7 @@ class Perception():
 
             else:
                 self.current_colour = 'None'
-                self.draw_colour = self.possible_colour_values['black']
+                self.draw_colour = self.color_range['black']
                     
                 
             self.seen_colours = []
