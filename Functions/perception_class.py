@@ -133,26 +133,26 @@ class Perception():
 
     def area_of_interest_processing(self, frame_lab):
         self.best_contour = None
-        self.max_area = 0
+        self.best_contour_area = 0
         self.color_of_interest = None
 
         for color in color_range:
             if color in self.target_color:
-                frame_mask = cv2.inRange(frame_lab, color_range[color][0], color_range[color][1])  
-                opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6,6),np.uint8))  
-                closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6,6),np.uint8)) 
-                contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]  
+                color_mask = cv2.inRange(frame_lab, color_range[color][0], color_range[color][1]) # Find all values within given color range we want to analyze
+                cleaned_image = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, np.ones(self.filter_kernal, np.uint8))
+                cleaned_image = cv2.morphologyEx(cleaned_image, cv2.MORPH_CLOSE, np.ones(self.filter_kernal, np.uint8))
+                contours = cv2.findContours(cleaned_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2] # Only give us the contours, don't care about the image or hierarchy
 
-                if not contours:
+                try:
+                    largest_contour = max(contours, key=cv2.contourArea)
+                    largest_contour_area = cv2.contourArea(largest_contour)
+
+                    if largest_contour_area > self.best_contour_area:
+                        self.best_contour_area = largest_contour_area
+                        self.best_contour = largest_contour
+                        self.color_of_interest = color
+                except:
                     continue
-                
-                largest_contour = max(contours, key=cv2.contourArea)
-                largest_contour_area = cv2.contourArea(largest_contour)
-
-                if largest_contour_area > self.max_area:
-                    self.max_area = largest_contour_area
-                    self.best_contour = largest_contour
-                    self.color_of_interest = color
 
     def timing(self, rect):
         if time.time() - self.previous_time > self.time_thresh:
