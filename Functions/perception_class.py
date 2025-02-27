@@ -91,35 +91,35 @@ class Perception():
             distance = math.sqrt((world_x - self.last_x)**2 + (world_y - self.last_y)**2)
             self.last_x, self.last_y = world_x, world_y
 
-        if self.color_of_interest in self.color_to_number:
-            color_location = self.color_to_number[self.color_of_interest]
-
-        else:
-            color_location = 0
-            
-        self.color_list.append(color_location)
-
-        if distance < self.movement_change_thresh:
-            self.center_locations.extend((world_x, world_y))
-            self.timing(rect)
-
-        else:
-            self.previous_time = time.time()
-            self.center_locations = []
-
-        if len(self.color_list) == 3:
-            number = int(round(np.mean(np.array(self.color_list))))
-            
-            if number in self.number_to_color:
-                self.current_colour = self.number_to_color[number]
-                self.draw_colour = self.color_range[self.current_colour]
+            if self.color_of_interest in self.color_to_number:
+                color_location = self.color_to_number[self.color_of_interest]
 
             else:
-                self.current_colour = 'None'
-                self.draw_colour = self.color_range['black']
+                color_location = 0
+            
+            self.color_list.append(color_location)
+
+            if distance < self.movement_change_thresh:
+                self.center_locations.extend((world_x, world_y))
+                self.timing(rect)
+
+            else:
+                self.previous_time = time.time()
+                self.center_locations = []
+
+            if len(self.color_list) == 3:
+                number = int(round(np.mean(np.array(self.color_list))))
+            
+                if number in self.number_to_color:
+                    self.current_colour = self.number_to_color[number]
+                    self.draw_colour = self.color_range[self.current_colour]
+
+                else:
+                    self.current_colour = 'None'
+                    self.draw_colour = self.color_range['black']
                     
                 
-            self.color_list = []
+                self.color_list = []
 
         else:
             self.draw_colour = (0, 0, 0)
