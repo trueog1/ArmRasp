@@ -61,7 +61,7 @@ class Move():
                 self.set_rgb(current_color)
 
                 world_X, world_Y, rotation_angle = self.perception.last_x, self.perception.last_y, self.perception.rotation_angle
-                result = self.arm_kinematics.setPitchRangeMoving((world_X, world_Y, self.desired_approach_height_grasp), -90, -90, 0)  
+                result = self.AK.setPitchRangeMoving((world_X, world_Y, self.desired_approach_height_grasp), -90, -90, 0)  
 
                 if result:
                     time.sleep(result[2]/1000)
