@@ -71,33 +71,33 @@ class Move():
                     Board.setBusServoPulse(2, servo2_angle, 500)
                     time.sleep(0.5)
 
-                    AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 1000)
+                    self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 1000)
                     time.sleep(1.5)
 
                     Board.setBusServoPulse(1, self.servo1, 500)  #夹持器闭合
                     time.sleep(0.8)
 
                     Board.setBusServoPulse(2, 500, 500)
-                    AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 1000)  #机械臂抬起
+                    self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 1000)  #机械臂抬起
                     time.sleep(1)
 
-                    result = AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], 12), -90, -90, 0)   
+                    result = self.AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], 12), -90, -90, 0)   
                     time.sleep(result[2]/1000)
 
                     servo2_angle = getAngle(self.coordinate[current_color][0], self.coordinate[current_color][1], -90)
                     Board.setBusServoPulse(2, servo2_angle, 500)
                     time.sleep(0.5)
 
-                    AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], self.coordinate[current_color][2] + 3), -90, -90, 0, 500)
+                    self.AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], self.coordinate[current_color][2] + 3), -90, -90, 0, 500)
                     time.sleep(0.5)
 
-                    AK.setPitchRangeMoving((self.coordinate[current_color]), -90, -90, 0, 1000)
+                    self.AK.setPitchRangeMoving((self.coordinate[current_color]), -90, -90, 0, 1000)
                     time.sleep(0.8)
 
                     Board.setBusServoPulse(1, self.servo1 - 200, 500)  # 爪子张开  ，放下物体
                     time.sleep(0.8)
 
-                    AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], 12), -90, -90, 0, 800)
+                    self.AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], 12), -90, -90, 0, 800)
                     time.sleep(0.8)
 
                     self.initMove()  # 回到初始位置
