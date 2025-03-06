@@ -246,8 +246,8 @@ class Move():
                     #Board.setBusServoPulse(1, self.servo1 - 200, 500)  # 爪子张开=claws spread  ，放下物体 = drop object, so we can comment this out as well
                     #time.sleep(0.8)
 
-                    self.AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], 12), -90, -90, 0, 800)
-                    time.sleep(0.8)
+                    #self.AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], 12), -90, -90, 0, 800)
+                    #time.sleep(0.8)
 
                     self.initMove()  # 回到初始位置 = return to initial position
                     time.sleep(1.5)
