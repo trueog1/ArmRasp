@@ -219,38 +219,18 @@ class Move():
                     
                     servo2_angle = getAngle(world_X, world_Y, rotation_angle) #计算夹持器需要旋转的角度 = Calculate the angle at which the gripper needs to be rotated
                     Board.setBusServoPulse(1, self.servo1, 500)  #夹持器闭合 = gripper closed
-                    #Board.setBusServoPulse(1, self.servo1 - 280, 500)  # 爪子张开 = open claws, so let's comment this out
                     Board.setBusServoPulse(2, servo2_angle, 500)
-                    time.sleep(0.5)
+                    time.sleep(0.25)
 
                     self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 1000)
-                    time.sleep(1.5)
+                    time.sleep(0.75)
 
                     Board.setBusServoPulse(2, 500, 500)
                     self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 1000)  #机械臂抬起 = the robotic arm is raised
-                    time.sleep(1)
-
-                    result = self.AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], 12), -90, -90, 0)   
-                    time.sleep(result[2]/1000)
-
-                    servo2_angle = getAngle(self.coordinate[current_color][0], self.coordinate[current_color][1], -90)
-                    Board.setBusServoPulse(2, servo2_angle, 500)
                     time.sleep(0.5)
-
-                    self.AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], self.coordinate[current_color][2] + 3), -90, -90, 0, 500)
-                    time.sleep(0.5)
-
-                    self.AK.setPitchRangeMoving((self.coordinate[current_color]), -90, -90, 0, 1000)
-                    time.sleep(0.8)
-
-                    #Board.setBusServoPulse(1, self.servo1 - 200, 500)  # 爪子张开=claws spread  ，放下物体 = drop object, so we can comment this out as well
-                    #time.sleep(0.8)
-
-                    #self.AK.setPitchRangeMoving((self.coordinate[current_color][0], self.coordinate[current_color][1], 12), -90, -90, 0, 800)
-                    #time.sleep(0.8)
 
                     self.initMove()  # 回到初始位置 = return to initial position
-                    time.sleep(1.5)
+                    #time.sleep(0.75)
 
                     current_color = 'None'
                     self.set_rgb(current_color)
