@@ -215,7 +215,8 @@ class Move():
                 result = self.AK.setPitchRangeMoving((world_X, world_Y, self.desired_approach_height_grasp), -90, -90, 0)  
 
                 if result:
-                    time.sleep(result[2]/1000)
+                    #time.sleep(result[2]/1000)
+                    time.sleep(result[2]/10)
 
                     servo2_angle = getAngle(world_X, world_Y, rotation_angle) #计算夹持器需要旋转的角度
                     Board.setBusServoPulse(1, self.servo1 - 280, 500)  # 爪子张开
