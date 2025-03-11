@@ -205,7 +205,7 @@ class Move():
     def initMove(self):
         Board.setBusServoPulse(1, 650 - 50, 300)
         #Board.setBusServoPulse(2, 500, 500)
-        Board.setBusServoPulse(2, 00, 500)
+        Board.setBusServoPulse(2, 10, 500)
         self.AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
         time.sleep(self.sleep_time)
 
@@ -228,11 +228,11 @@ class Move():
                     #Board.setBusServoPulse(2, servo2_angle, 200)
                     time.sleep(0.1)
 
-                    self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 750)  #was originally 1000, maybe =1, so now should be a quarter of that?
+                    self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 400)  #was originally 1000, maybe =1, so now should be a quarter of that?
                     time.sleep(0.25)
 
-                    Board.setBusServoPulse(2, 000, 200)
-                    self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 750)  #机械臂抬起 = the robotic arm is raised
+                    Board.setBusServoPulse(2, 10, 200)
+                    self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 400)  #机械臂抬起 = the robotic arm is raised
                     time.sleep(0.25)
 
                     self.initMove()  # 回到初始位置 = return to initial position
