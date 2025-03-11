@@ -19,8 +19,11 @@ class Perception():
             'blue':  (255, 0, 0),
             'green': (0, 255, 0),
             'black': (0, 0, 0),
-            'white': (255, 255, 255),}
-        self.target_color = ('red', 'green', 'blue')
+            'white': (255, 255, 255),
+            'orange': (0,165,255),
+            'purple': (255, 0, 157),
+            'yellow': (0, 255, 255)}
+        self.target_color = ('red', 'green', 'blue', 'orange', 'purple', 'yellow')
         self.camera = Camera.Camera()
         self.camera.camera_open()
         self.size = (640, 480)
