@@ -38,8 +38,8 @@ class Perception():
         self.roi = ()
         self.last_x = 0
         self.last_y = 0
-        self.color_to_number = {"red" : 1, "green" : 2, "blue" : 3}
-        self.number_to_color = {1 : "red", 2 : "green", 3 : "blue"}
+        self.color_to_number = {"red" : 1, "green" : 2, "blue" : 3, "orange": 4, "purple": 5, "yellow": 6}
+        self.number_to_color = {1 : "red", 2 : "green", 3 : "blue", 4: "orange", 5:"purple", 6:"yellow"}
         self.color_list = []
         self.center_locations = []
         self.movement_change_thresh = 0.5
@@ -115,7 +115,7 @@ class Perception():
                 self.previous_time = time.time()
                 self.center_locations = []
 
-            if len(self.color_list) == 3:
+            if len(self.color_list) == 6:
                 number = int(round(np.mean(np.array(self.color_list))))
             
                 if number in self.number_to_color:
