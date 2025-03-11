@@ -142,9 +142,9 @@ class Perception():
         self.best_contour_area = 0
         self.color_of_interest = None
 
-        for color in color_range:
+        for color in self.color_range:
             if color in self.target_color:
-                color_mask = cv2.inRange(frame_lab, color_range[color][0], color_range[color][1]) # Find all values within given color range we want to analyze
+                color_mask = cv2.inRange(frame_lab, self.color_range[color][0], self.color_range[color][1]) # Find all values within given color range we want to analyze
                 cleaned_image = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, np.ones(self.filter_kernal, np.uint8))
                 cleaned_image = cv2.morphologyEx(cleaned_image, cv2.MORPH_CLOSE, np.ones(self.filter_kernal, np.uint8))
                 contours = cv2.findContours(cleaned_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2] # Only give us the contours, don't care about the image or hierarchy
