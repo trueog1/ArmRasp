@@ -171,7 +171,7 @@ class Perception():
     def timing(self, rect):
         if time.time() - self.previous_time > self.time_thresh:
             self.rotation_angle = rect[2]
-            self.center_locations = []
+            #self.center_locations = []
             self.previous_time = time.time()
 
     # Notes from sheet music
