@@ -58,8 +58,8 @@ class Perception():
                 frame = img.copy()
                 Frame = self.processing_image(frame)           
                 img = cv2.imshow('Frame', Frame)
-                bgr_value = int(img, [300, 300])
-                print(bgr_value)
+                #bgr_value = int(img, [300, 300])
+                #print(bgr_value)
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
