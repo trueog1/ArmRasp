@@ -254,7 +254,7 @@ class Move():
                 #self.set_rgb(current_color)
 
                 for color in self.target_color:
-                    world_X, world_Y, rotation_angle = self.perception.center_location[color][0], self.perception.center_location[color][1], self.perception.rotation_angle
+                    world_X, world_Y, rotation_angle = self.perception.center_locations[color][0], self.perception.center_locations[color][1], self.perception.rotation_angle
                     result = self.AK.setPitchRangeMoving((world_X, world_Y, self.desired_approach_height_grasp), -90, -90, 0)  
 
                     if result:
