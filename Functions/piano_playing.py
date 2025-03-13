@@ -48,7 +48,7 @@ class Perception():
         self.time_thresh = 1.0
         self.current_colour = "None"
         self.draw_colour = self.color_range['black']
-        self.rotation_angle = 0
+        self.rotation_angle = {"red": 0, "green": 0, "blue": 0}
 
 
     def finding_objects(self):
@@ -113,7 +113,7 @@ class Perception():
 
                 if distance < self.movement_change_thresh:
                     self.center_locations[color] = (world_x, world_y)
-                    self.timing(rect)
+                    self.timing(rect, color)
 
                 else:
                     self.previous_time = time.time()
@@ -168,9 +168,9 @@ class Perception():
                 except:
                     continue
 
-    def timing(self, rect):
+    def timing(self, rect, color):
         if time.time() - self.previous_time > self.time_thresh:
-            self.rotation_angle = rect[2]
+            self.rotation_angle[color] = rect[2]
             #self.center_locations = []
             self.previous_time = time.time()
 
@@ -252,6 +252,8 @@ class Move():
             if self.perception.center_locations["red"][0] != 0 and self.perception.center_locations["green"][0] != 0 and self.perception.center_locations["blue"][0] != 0:
                 #current_color = self.perception.current_colour
                 #self.set_rgb(current_color)
+                print(f'success')
+                print(self.perception.center_locations)
 
                 for color in self.target_color:
                     world_X, world_Y, rotation_angle = self.perception.center_locations[color][0], self.perception.center_locations[color][1], self.perception.rotation_angle
