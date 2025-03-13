@@ -112,6 +112,7 @@ class Perception():
                 self.color_list.append(color_location)'''
 
                 if distance < self.movement_change_thresh:
+                    print(f'updating')
                     self.center_locations[color] = (world_x, world_y)
                     self.timing(rect, color)
 
