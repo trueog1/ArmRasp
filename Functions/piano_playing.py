@@ -102,6 +102,7 @@ class Perception():
 
                 distance = math.sqrt((world_x - self.last_x)**2 + (world_y - self.last_y)**2)
                 self.last_x, self.last_y = world_x, world_y
+                print(f'coords')
 
                 '''if self.color_of_interest in self.color_to_number:
                     color_location = self.color_to_number[self.color_of_interest]
@@ -250,12 +251,12 @@ class Move():
 
     def moving_arm(self):
         while True:
-            print(self.perception.center_locations)
+            #print(self.perception.center_locations)
             if self.perception.center_locations["red"][0] != 0 and self.perception.center_locations["green"][0] != 0 and self.perception.center_locations["blue"][0] != 0:
                 #current_color = self.perception.current_colour
                 #self.set_rgb(current_color)
-                print(f'success')
-                print(self.perception.center_locations)
+                #print(f'success')
+                #print(self.perception.center_locations)
 
                 for color in self.target_color:
                     world_X, world_Y, rotation_angle = self.perception.center_locations[color][0], self.perception.center_locations[color][1], self.perception.rotation_angle[color]
