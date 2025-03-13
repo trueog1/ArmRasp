@@ -249,6 +249,7 @@ class Move():
 
     def moving_arm(self):
         while True:
+            print(self.perception.center_locations)
             if self.perception.center_locations["red"][0] != 0 and self.perception.center_locations["green"][0] != 0 and self.perception.center_locations["blue"][0] != 0:
                 #current_color = self.perception.current_colour
                 #self.set_rgb(current_color)
