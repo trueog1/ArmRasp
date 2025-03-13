@@ -57,7 +57,9 @@ class Perception():
             if img is not None:
                 frame = img.copy()
                 Frame = self.processing_image(frame)           
-                cv2.imshow('Frame', Frame)
+                img = cv2.imshow('Frame', Frame)
+                bgr_value = int(img, [300, 300])
+                print(bgr_value)
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
