@@ -15,17 +15,17 @@ from CameraCalibration.CalibrationConfig import *
 class Perception():
     def __init__(self):
         self.color_range = {
-            #'red':   (0, 0, 255),
-            #'blue':  (255, 0, 0),
-            #'green': (0, 255, 0),
+            'red':   (0, 0, 255),
+            'blue':  (255, 0, 0),
+            'green': (0, 255, 0),
             'black': (0, 0, 0),
             'white': (255, 255, 255),
             'orange': (31,95,255),
             'purple': (128, 0, 128),
             'yellow': (0, 255, 255)}
         
-        #self.target_color = ('red', 'green', 'blue', 'orange', 'purple', 'yellow')
-        self.target_color = ('orange', 'purple', 'yellow')
+        self.target_color = ('red', 'green', 'blue', 'orange', 'purple', 'yellow')
+        #self.target_color = ('orange', 'purple', 'yellow')
         
         self.camera = Camera.Camera()
         self.camera.camera_open()
