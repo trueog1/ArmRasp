@@ -20,13 +20,9 @@ class Perception():
             'green': (0, 255, 0),
             'black': (0, 0, 0),
             'white': (255, 255, 255),
-            'orange': (31,95,255),
-            'purple': (128, 0, 128),
-            'yellow': (0, 255, 255)}
+            }
         
-        self.target_color = ('red', 'green', 'blue', 'orange', 'purple', 'yellow')
-        #self.target_color = ('orange', 'purple', 'yellow')
-        
+        self.target_color = ('red', 'green', 'blue')
         self.camera = Camera.Camera()
         self.camera.camera_open()
         self.size = (640, 480)
@@ -41,10 +37,12 @@ class Perception():
         self.roi = ()
         self.last_x = 0
         self.last_y = 0
-        self.color_to_number = {"red" : 1, "green" : 2, "blue" : 3, "orange": 4, "purple": 5, "yellow": 6}
-        self.number_to_color = {1 : "red", 2 : "green", 3 : "blue", 4: "orange", 5:"purple", 6:"yellow"}
+        self.color_to_number = {"red" : 1, "green" : 2, "blue" : 3}
+        self.number_to_color = {1 : "red", 2 : "green", 3 : "blue"}
         self.color_list = []
-        self.center_locations = []
+        self.color_area = {"red": 0, "blue": 0, "green": 0}
+        self.center_locations = {"red": 0, "blue": 0, "green": 0}
+        self.best_contour_d = {"red": 0, "blue": 0, "green": 0}
         self.movement_change_thresh = 0.5
         self.previous_time = time.time()
         self.time_thresh = 1.0
@@ -88,55 +86,56 @@ class Perception():
 
         self.area_of_interest_processing(frame_lab)
 
-        if self.best_contour_area > self.minimum_contour_thresh:
-            rect = cv2.minAreaRect(self.best_contour)
-            box = np.int0(cv2.boxPoints(rect))
-            
-            self.roi = getROI(box)
-            img_x, img_y = getCenter(rect, self.roi, self.size, square_length)
-            world_x, world_y = convertCoordinate(img_x, img_y, self.size)
+        for color in self.target_color:
+            if self.color_area[color] > self.minimum_contour_thresh:
+                rect = cv2.minAreaRect(self.best_contour_d[color])
+                box = np.int0(cv2.boxPoints(rect))
+                
+                self.roi = getROI(box)
+                img_x, img_y = getCenter(rect, self.roi, self.size, square_length)
+                world_x, world_y = convertCoordinate(img_x, img_y, self.size)
 
-            cv2.drawContours(img, [box], -1, self.color_range[self.color_of_interest], 2)
-            cv2.putText(img, f'({world_x}, {world_y})', (min(box[0, 0], box[2, 0]), box[2, 1] - 10), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, 
-                        self.color_range[self.color_of_interest], 1) 
+                cv2.drawContours(img, [box], -1, self.color_range[self.color_of_interest], 2)
+                cv2.putText(img, f'({world_x}, {world_y})', (min(box[0, 0], box[2, 0]), box[2, 1] - 10), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, 
+                            self.color_range[self.color_of_interest], 1) 
 
-            distance = math.sqrt((world_x - self.last_x)**2 + (world_y - self.last_y)**2)
-            self.last_x, self.last_y = world_x, world_y
+                distance = math.sqrt((world_x - self.last_x)**2 + (world_y - self.last_y)**2)
+                self.last_x, self.last_y = world_x, world_y
 
-            if self.color_of_interest in self.color_to_number:
-                color_location = self.color_to_number[self.color_of_interest]
-
-            else:
-                color_location = 0
-            
-            self.color_list.append(color_location)
-
-            if distance < self.movement_change_thresh:
-                self.center_locations.extend((world_x, world_y))
-                self.timing(rect)
-
-            else:
-                self.previous_time = time.time()
-                self.center_locations = []
-
-            if len(self.color_list) == 6:
-                number = int(round(np.mean(np.array(self.color_list))))
-            
-                if number in self.number_to_color:
-                    self.current_colour = self.number_to_color[number]
-                    self.draw_colour = self.color_range[self.current_colour]
+                '''if self.color_of_interest in self.color_to_number:
+                    color_location = self.color_to_number[self.color_of_interest]
 
                 else:
-                    self.current_colour = 'None'
-                    self.draw_colour = self.color_range['black']
-                    
+                    color_location = 0
                 
-                self.color_list = []
+                self.color_list.append(color_location)'''
 
-        else:
-            self.draw_colour = (0, 0, 0)
-            self.current_colour = "None"
+                if distance < self.movement_change_thresh:
+                    self.center_locations[color] = (world_x, world_y)
+                    self.timing(rect)
+
+                else:
+                    self.previous_time = time.time()
+                    #self.center_locations = {}
+
+                '''if len(self.color_list) == 6:
+                    number = int(round(np.mean(np.array(self.color_list))))
+                
+                    if number in self.number_to_color:
+                        self.current_colour = self.number_to_color[number]
+                        self.draw_colour = self.color_range[self.current_colour]
+
+                    else:
+                        self.current_colour = 'None'
+                        self.draw_colour = self.color_range['black']
+                        
+                    
+                    self.color_list = []'''
+
+            else:
+                self.draw_colour = (0, 0, 0)
+                self.current_colour = "None"
 
         cv2.putText(img, f'Colour: {self.current_colour}', (10, img_h - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.65, self.draw_colour, 2)
         return img
@@ -157,11 +156,15 @@ class Perception():
                 try:
                     largest_contour = max(contours, key=cv2.contourArea)
                     largest_contour_area = cv2.contourArea(largest_contour)
+                    self.color_area[color] = largest_contour_area
+                    self.best_contour_d[color] = largest_contour
 
                     if largest_contour_area > self.best_contour_area:
                         self.best_contour_area = largest_contour_area
                         self.best_contour = largest_contour
                         self.color_of_interest = color
+                        self.color_area[color] = self.best_contour_area
+                        self.best_contour_d[color] = self.best_contour
                 except:
                     continue
 
@@ -246,35 +249,36 @@ class Move():
 
     def moving_arm(self):
         while True:
-            if self.perception.current_colour != "None":
-                current_color = self.perception.current_colour
-                self.set_rgb(current_color)
+            if self.perception.center_location["red"][0] != 0 and self.perception.center_location["green"][0] != 0 and self.perception.center_location["blue"][0] != 0:
+                #current_color = self.perception.current_colour
+                #self.set_rgb(current_color)
 
-                world_X, world_Y, rotation_angle = self.perception.last_x, self.perception.last_y, self.perception.rotation_angle
-                result = self.AK.setPitchRangeMoving((world_X, world_Y, self.desired_approach_height_grasp), -90, -90, 0)  
+                for color in self.target_color:
+                    world_X, world_Y, rotation_angle = self.perception.center_location[color][0], self.perception.center_location[color][1], self.perception.rotation_angle
+                    result = self.AK.setPitchRangeMoving((world_X, world_Y, self.desired_approach_height_grasp), -90, -90, 0)  
 
-                if result:
-                    time.sleep(result[2]/2000) #this was originally divide by 1000
-                    
-                    servo2_angle = getAngle(world_X, world_Y, rotation_angle) #计算夹持器需要旋转的角度 = Calculate the angle at which the gripper needs to be rotated
-                    #Board.setBusServoPulse(1, self.servo1, 200)  #夹持器闭合 = gripper closed
-                    print(self.servo1)
-                    Board.setBusServoPulse(1, 600, 200)  #夹持器闭合 = gripper closed
-                    #Board.setBusServoPulse(2, servo2_angle, 200)
-                    time.sleep(0.1)
+                    if result:
+                        time.sleep(result[2]/2000) #this was originally divide by 1000
+                        
+                        servo2_angle = getAngle(world_X, world_Y, rotation_angle) #计算夹持器需要旋转的角度 = Calculate the angle at which the gripper needs to be rotated
+                        #Board.setBusServoPulse(1, self.servo1, 200)  #夹持器闭合 = gripper closed
+                        print(self.servo1)
+                        Board.setBusServoPulse(1, 600, 200)  #夹持器闭合 = gripper closed
+                        #Board.setBusServoPulse(2, servo2_angle, 200)
+                        time.sleep(0.1)
 
-                    self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 400)  #was originally 1000, maybe =1, so now should be a quarter of that?
-                    time.sleep(0.25)
+                        self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 400)  #was originally 1000, maybe =1, so now should be a quarter of that?
+                        time.sleep(0.25)
 
-                    Board.setBusServoPulse(2, 10, 200)
-                    self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 400)  #机械臂抬起 = the robotic arm is raised
-                    time.sleep(0.25)
+                        Board.setBusServoPulse(2, 10, 200)
+                        self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 400)  #机械臂抬起 = the robotic arm is raised
+                        time.sleep(0.25)
 
-                    self.initMove()  # 回到初始位置 = return to initial position
-                    #time.sleep(0.75)
+                        self.initMove()  # 回到初始位置 = return to initial position
+                        #time.sleep(0.75)
 
-                    current_color = 'None'
-                    self.set_rgb(current_color)
+                        current_color = 'None'
+                        self.set_rgb(current_color)
 
 if __name__ == "__main__":
     perception = Perception()
