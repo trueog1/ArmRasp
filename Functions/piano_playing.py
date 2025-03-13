@@ -41,7 +41,7 @@ class Perception():
         self.number_to_color = {1 : "red", 2 : "green", 3 : "blue"}
         self.color_list = []
         self.color_area = {"red": 0, "blue": 0, "green": 0}
-        self.center_locations = {"red": 0, "blue": 0, "green": 0}
+        self.center_locations = {"red": (0,0), "blue": (0,0), "green": (0,0)}
         self.best_contour_d = {"red": 0, "blue": 0, "green": 0}
         self.movement_change_thresh = 0.5
         self.previous_time = time.time()
