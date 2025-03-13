@@ -104,6 +104,10 @@ class Perception():
                 self.last_x, self.last_y = world_x, world_y
                 print(f'coords')
 
+                self.center_locations[color] = (world_x, world_y)
+                self.timing(rect, color)
+                print(f'updating')
+
                 '''if self.color_of_interest in self.color_to_number:
                     color_location = self.color_to_number[self.color_of_interest]
 
@@ -112,14 +116,14 @@ class Perception():
                 
                 self.color_list.append(color_location)'''
 
-                if distance < self.movement_change_thresh:
+                '''if distance < self.movement_change_thresh:
                     print(f'updating')
                     self.center_locations[color] = (world_x, world_y)
                     self.timing(rect, color)
 
                 else:
                     self.previous_time = time.time()
-                    #self.center_locations = {}
+                    #self.center_locations = {}'''
 
                 '''if len(self.color_list) == 6:
                     number = int(round(np.mean(np.array(self.color_list))))
