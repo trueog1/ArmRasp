@@ -143,7 +143,7 @@ class Perception():
                 self.draw_colour = (0, 0, 0)
                 self.current_colour = "None"
 
-        self.center_locations["yellow"] = (self.center_locations["green"][0] + 10, self.center_locations["green"][1])
+        self.center_locations["yellow"] = (self.center_locations["green"][0] + 2, self.center_locations["green"][1])
         #print(self.rotation_angle)
         self.rotation_angle["yellow"] = self.rotation_angle["green"]
         _, chorous_color, _, chorous_time = self.get_music()
