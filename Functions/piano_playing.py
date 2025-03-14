@@ -297,7 +297,7 @@ class Move():
                         self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 500)
                         time.sleep(0.4)
                         
-                        self.AK.setPitchRangeMoving((world_X, world_Y, 7), -90, -90, 0, 500)
+                        self.AK.setPitchRangeMoving((world_X, world_Y, 6), -90, -90, 0, 500)
                         time.sleep(0.4)
 
                         Board.setBusServoPulse(2, 10, 200)
