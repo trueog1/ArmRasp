@@ -283,7 +283,7 @@ class Move():
                 print(f'success')
                 #print(self.perception.center_locations)
 
-                for color in self.new_target_color:
+                for i, color in enumerate(self.perception.chorous_color):
                     world_X, world_Y, rotation_angle = self.perception.center_locations[color][0], self.perception.center_locations[color][1], self.perception.rotation_angle[color]
                     #result = self.AK.setPitchRangeMoving((world_X, world_Y, self.desired_approach_height_grasp), -90, -90, 0)  
 
@@ -303,7 +303,7 @@ class Move():
                         time.sleep(0.4)
                         
                         self.AK.setPitchRangeMoving((world_X, world_Y, 6), -90, -90, 0, 500)
-                        time.sleep(0.4)
+                        time.sleep(0.4 + self.perception.chorous_time[i])
 
                         Board.setBusServoPulse(2, 100, 200)
                         #self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 500)
