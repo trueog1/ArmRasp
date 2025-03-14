@@ -268,7 +268,7 @@ class Move():
 
                     if world_X:
                         #time.sleep(result[2]/2000) #this was originally divide by 1000
-                        time.sleept(0.1)
+                        time.sleep(0.1)
 
                         servo2_angle = getAngle(world_X, world_Y, rotation_angle) #计算夹持器需要旋转的角度 = Calculate the angle at which the gripper needs to be rotated
                         #Board.setBusServoPulse(1, self.servo1, 200)  #夹持器闭合 = gripper closed
