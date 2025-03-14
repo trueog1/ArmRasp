@@ -245,6 +245,7 @@ class Move():
         self.desired_approach_height_grasp = 7
         self.desired_final_height_grasp = 1.0
         self.servo1 = 500
+        self.new_target_color = ('red', 'green', 'blue', 'yellow')
 
     def set_rgb(self, color):
         if color == "red":
@@ -280,7 +281,7 @@ class Move():
                 print(f'success')
                 #print(self.perception.center_locations)
 
-                for color in self.perception.target_color:
+                for color in self.new_target_color:
                     world_X, world_Y, rotation_angle = self.perception.center_locations[color][0], self.perception.center_locations[color][1], self.perception.rotation_angle[color]
                     #result = self.AK.setPitchRangeMoving((world_X, world_Y, self.desired_approach_height_grasp), -90, -90, 0)  
 
