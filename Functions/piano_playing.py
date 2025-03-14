@@ -143,6 +143,7 @@ class Perception():
                 self.draw_colour = (0, 0, 0)
                 self.current_colour = "None"
 
+        self.center_locations["yellow"] = self.center_locations["green"][0] + 1
         cv2.putText(img, f'Colour: {self.current_colour}', (10, img_h - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.65, self.draw_colour, 2)
         return img
 
