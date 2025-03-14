@@ -247,7 +247,8 @@ class Move():
         self.desired_approach_height_grasp = 7
         self.desired_final_height_grasp = 1.0
         self.servo1 = 500
-        self.new_target_color = ('red', 'green', 'blue', 'yellow')
+        #self.new_target_color = ('red', 'green', 'blue', 'yellow')
+        self.height = {"red": 6, "green": 6, "blue": 8, "yellow": 6}
 
     def set_rgb(self, color):
         if color == "red":
@@ -302,7 +303,7 @@ class Move():
                         self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 500)
                         time.sleep(0.4)
                         
-                        self.AK.setPitchRangeMoving((world_X, world_Y, 6), -90, -90, 0, 500)
+                        self.AK.setPitchRangeMoving((world_X, world_Y, self.height[color]), -90, -90, 0, 500)
                         time.sleep(0.4 + self.perception.chorous_time[i])
 
                         Board.setBusServoPulse(2, 100, 200)
