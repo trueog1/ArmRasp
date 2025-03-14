@@ -263,9 +263,9 @@ class Move():
             Board.RGB.show()
 
     def initMove(self):
-        Board.setBusServoPulse(1, 650 - 50, 300)
+        Board.setBusServoPulse(1, 600 - 50, 300)
         #Board.setBusServoPulse(2, 500, 500)
-        Board.setBusServoPulse(2, 10, 500)
+        Board.setBusServoPulse(2, 50, 500)
         self.AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
         time.sleep(self.sleep_time)
 
@@ -289,7 +289,7 @@ class Move():
                         servo2_angle = getAngle(world_X, world_Y, rotation_angle) #计算夹持器需要旋转的角度 = Calculate the angle at which the gripper needs to be rotated
                         #Board.setBusServoPulse(1, self.servo1, 200)  #夹持器闭合 = gripper closed
                         print(self.servo1)
-                        Board.setBusServoPulse(1, 600, 200)  #夹持器闭合 = gripper closed
+                        Board.setBusServoPulse(1, 550, 200)  #夹持器闭合 = gripper closed
                         #Board.setBusServoPulse(2, servo2_angle, 200)
                         time.sleep(0.1)
 
@@ -300,7 +300,7 @@ class Move():
                         self.AK.setPitchRangeMoving((world_X, world_Y, 6), -90, -90, 0, 500)
                         time.sleep(0.4)
 
-                        Board.setBusServoPulse(2, 10, 200)
+                        Board.setBusServoPulse(2, 50, 200)
                         #self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 500)
                         self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 500)  #机械臂抬起 = the robotic arm is raised
                         time.sleep(0.4)
