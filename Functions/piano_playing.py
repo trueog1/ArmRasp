@@ -144,6 +144,7 @@ class Perception():
                 self.current_colour = "None"
 
         self.center_locations["yellow"] = (self.center_locations["green"][0] + 1, self.center_locations["green"][1])
+        _, chorous_color, _, chorous_time = self.get_music()
         cv2.putText(img, f'Colour: {self.current_colour}', (10, img_h - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.65, self.draw_colour, 2)
         return img
 
@@ -184,7 +185,7 @@ class Perception():
     # Notes from sheet music
     def get_music(self):
         pre_chorous= 'd c d d d d d d c d e d d d d d e d d d d a g f e f e f e f f f d e e e e d g f '
-        chorous = 'f f d s d d g f d d e e d f d e d e f e d e e d f d e d e d f e d e d f e d d e f e f e f e f f e d'
+        chorous = 'f f d d d g f d d e e d f d e d e f e d e e d f d e d e d f e d e d f e d d e f e f e f e f f e d'
         pre_chorous_notes= pre_chorous.split(' ')
         chorous_notes = chorous.split(' ')
         c_colors = []
@@ -192,7 +193,7 @@ class Perception():
 
         #types of notes from sheet music
         pre_chorous_type = [8, 8 ,8, 8, 8, 4, 8, 8, 8, 4, 4, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 4, 4, 8, 8, 8, 4, 4, 4, 2 ]
-        chorous_type = [8, 4, 8, 4, 8, 8, 4, 4, 4, 8, 8, 8, 8, 8, 8, 4, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 8, 8, 8, 8, 8, 8, 4, 8, 8, 4]
+        chorous_type = [8, 4, 8, 8, 8, 4, 4, 4, 8, 8, 8, 8, 8, 8, 4, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8, 4, 4, 8, 8, 4, 4, 4, 8, 8, 4, 4, 8, 8, 4, 8, 8, 8, 8, 8, 8, 4, 8, 8, 4]
         play_time_pc= []
         play_time_c = []
         self.bpm_to_time (pre_chorous_type,play_time_pc)
