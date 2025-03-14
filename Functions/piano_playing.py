@@ -264,11 +264,12 @@ class Move():
 
                 for color in self.perception.target_color:
                     world_X, world_Y, rotation_angle = self.perception.center_locations[color][0], self.perception.center_locations[color][1], self.perception.rotation_angle[color]
-                    result = self.AK.setPitchRangeMoving((world_X, world_Y, self.desired_approach_height_grasp), -90, -90, 0)  
+                    #result = self.AK.setPitchRangeMoving((world_X, world_Y, self.desired_approach_height_grasp), -90, -90, 0)  
 
-                    if result:
-                        time.sleep(result[2]/2000) #this was originally divide by 1000
-                        
+                    if world_X:
+                        #time.sleep(result[2]/2000) #this was originally divide by 1000
+                        time.sleept(0.1)
+
                         servo2_angle = getAngle(world_X, world_Y, rotation_angle) #计算夹持器需要旋转的角度 = Calculate the angle at which the gripper needs to be rotated
                         #Board.setBusServoPulse(1, self.servo1, 200)  #夹持器闭合 = gripper closed
                         print(self.servo1)
