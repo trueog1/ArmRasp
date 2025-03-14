@@ -186,6 +186,8 @@ class Perception():
         chorous = 'f f d s d d g f d d e e d f d e d e f e d e e d f d e d e d f e d e d f e d d e f e f e f e f f e d'
         pre_chorous_notes= pre_chorous.split(' ')
         chorous_notes = chorous.split(' ')
+        c_colors = []
+        pc_colors = []
 
         #types of notes from sheet music
         pre_chorous_type = [8, 8 ,8, 8, 8, 4, 8, 8, 8, 4, 4, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 4, 8, 8, 8, 8, 8, 8, 8, 4, 4, 8, 8, 8, 4, 4, 4, 2 ]
@@ -194,8 +196,10 @@ class Perception():
         play_time_c = []
         self.bpm_to_time (pre_chorous_type,play_time_pc)
         self.bpm_to_time(chorous_type,play_time_c)
+        self.notes_to_color(pre_chorous_notes,pc_colors)
+        self.notes_to_color(chorous_notes,c_colors)
 
-        return pre_chorous_notes, chorous_notes, play_time_pc, play_time_c
+        return pc_colors, c_colors, play_time_pc, play_time_c
     
     #equate note type to time
     def bpm_to_time (self, music,array):
@@ -209,6 +213,18 @@ class Perception():
             elif i == 3:
                 t = 1.5
             array.append(t)
+
+    def notes_to_color (self,music,array):
+        for i in music:
+            if i == 'd':
+                color = 'green'
+            elif i == 'e':
+                color = 'yellow'
+            elif i == 'f':
+                color = 'blue'
+            elif i == 'g':
+                color = 'red'
+            array.append(color)
 
 class Move():
     def __init__(self, perception):
