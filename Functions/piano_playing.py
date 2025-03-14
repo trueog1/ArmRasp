@@ -277,6 +277,9 @@ class Move():
                         time.sleep(0.1)
 
                         #self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 500)  #was originally 1000, maybe =1, so now should be a quarter of that?
+                        self.AK.setPitchRangeMoving((world_X, world_Y, 15), -90, -90, 0, 400)
+                        time.sleep(0.25)
+                        
                         self.AK.setPitchRangeMoving((world_X, world_Y, 10), -90, -90, 0, 400)
                         time.sleep(0.25)
 
