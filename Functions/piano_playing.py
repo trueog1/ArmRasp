@@ -301,16 +301,16 @@ class Move():
                         #sleeps reduced by 0.05, then 0.05 where applicable speed is now 350 rather than 500
 
                         #self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 500)  #was originally 1000, maybe =1, so now should be a quarter of that?
-                        self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 250)
-                        time.sleep(0.25)
+                        self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 350)
+                        time.sleep(0.3)
                         
-                        self.AK.setPitchRangeMoving((world_X, world_Y, self.height[color]), -90, -90, 0, 250)
-                        time.sleep(0.25 + self.perception.chorous_time[i])
+                        self.AK.setPitchRangeMoving((world_X, world_Y, self.height[color]), -90, -90, 0, 350)
+                        time.sleep(0.3 + self.perception.chorous_time[i])
 
                         Board.setBusServoPulse(2, 100, 200)
                         #self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 500)
-                        self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 250)  #机械臂抬起 = the robotic arm is raised
-                        time.sleep(0.25)
+                        self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 350)  #机械臂抬起 = the robotic arm is raised
+                        time.sleep(0.3)
 
                         #self.initMove()  # 回到初始位置 = return to initial position
                         #time.sleep(0.75)
